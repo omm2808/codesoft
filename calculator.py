@@ -1,199 +1,107 @@
-import math
-import tkinter as tk
-from tkinter import messagebox
+import customtkinter as ctk
 
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 
-class ScientificCalculator:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Modern Scientific Calculator")
-        self.root.geometry("420x650")
-        self.root.config(bg="#1e1e2f")
-        self.root.resizable(False, False)
+root = ctk.CTk()
+root.geometry("360x540")
+root.title("Modern Calculator")
+root.resizable(False, False)
 
-        self.expression = ""
+expression = ""
 
-        self.create_display()
-        self.create_buttons()
+display = ctk.CTkEntry(
+    root,
+    width=320,
+    height=70,
+    font=("Poppins", 30),
+    justify="right",
+    corner_radius=15
+)
+display.pack(pady=20)
 
-    # ---------------- DISPLAY ---------------- #
-    def create_display(self):
+def press(value):
+    global expression
+    expression += str(value)
+    display.delete(0, "end")
+    display.insert("end", expression)
 
-        self.display_frame = tk.Frame(self.root, bg="#1e1e2f")
-        self.display_frame.pack(fill="both", pady=15)
+def clear():
+    global expression
+    expression = ""
+    display.delete(0, "end")
 
-        self.display = tk.Entry(
-            self.display_frame,
-            font=("Segoe UI", 28),
-            bg="#2b2b3c",
-            fg="white",
-            bd=0,
-            justify="right",
-            insertbackground="white"
-        )
+def calculate():
+    global expression
+    try:
+        result = str(eval(expression))
+        display.delete(0, "end")
+        display.insert("end", result)
+        expression = result
+    except:
+        display.delete(0, "end")
+        display.insert("end", "Error")
+        expression = ""
 
-        self.display.pack(
-            fill="both",
-            padx=15,
-            ipady=20
-        )
+frame = ctk.CTkFrame(root, fg_color="transparent")
+frame.pack()
 
-    # ---------------- BUTTONS ---------------- #
-    def create_buttons(self):
+buttons = [
+    ["C", "÷", "×", "⌫"],
+    ["7", "8", "9", "-"],
+    ["4", "5", "6", "+"],
+    ["1", "2", "3", "="],
+    ["0", ".", "%"]
+]
 
-        buttons = [
-            ['C', '⌫', '(', ')'],
-            ['sin', 'cos', 'tan', '√'],
-            ['7', '8', '9', '÷'],
-            ['4', '5', '6', '×'],
-            ['1', '2', '3', '-'],
-            ['0', '.', '^', '+'],
-            ['π', 'e', '%', '=']
-        ]
+def backspace():
+    global expression
+    expression = expression[:-1]
+    display.delete(0, "end")
+    display.insert("end", expression)
 
-        button_frame = tk.Frame(self.root, bg="#1e1e2f")
-        button_frame.pack(expand=True, fill="both", padx=10, pady=10)
+for row in buttons:
+    row_frame = ctk.CTkFrame(frame, fg_color="transparent")
+    row_frame.pack(pady=6)
 
-        for row_index, row in enumerate(buttons):
+    for button in row:
 
-            for col_index, button_text in enumerate(row):
+        if button == "=":
+            cmd = calculate
+            color = "#00C853"
 
-                button = tk.Button(
-                    button_frame,
-                    text=button_text,
-                    font=("Segoe UI", 16, "bold"),
-                    bd=0,
-                    relief="flat",
-                    command=lambda value=button_text: self.click(value)
-                )
+        elif button == "C":
+            cmd = clear
+            color = "#FF5252"
 
-                # Colors
-                if button_text in ['+', '-', '×', '÷', '=', '^']:
-                    button.config(bg="#ff9500", fg="white")
+        elif button == "⌫":
+            cmd = backspace
+            color = "#FF9800"
 
-                elif button_text in ['C', '⌫']:
-                    button.config(bg="#ff3b30", fg="white")
+        else:
+            color = "#1F1F1F"
 
-                elif button_text in ['sin', 'cos', 'tan', '√', 'π', 'e', '%']:
-                    button.config(bg="#505062", fg="white")
+            if button == "×":
+                cmd = lambda x="*": press(x)
 
-                else:
-                    button.config(bg="#2d2d44", fg="white")
-
-                button.grid(
-                    row=row_index,
-                    column=col_index,
-                    sticky="nsew",
-                    padx=5,
-                    pady=5,
-                    ipadx=10,
-                    ipady=18
-                )
-
-        for i in range(7):
-            button_frame.rowconfigure(i, weight=1)
-
-        for j in range(4):
-            button_frame.columnconfigure(j, weight=1)
-
-    # ---------------- BUTTON CLICK ---------------- #
-    def click(self, value):
-
-        try:
-            if value == "C":
-                self.expression = ""
-                self.update_display()
-
-            elif value == "⌫":
-                self.expression = self.expression[:-1]
-                self.update_display()
-
-            elif value == "=":
-                self.calculate()
-
-            elif value == "√":
-                self.expression += "math.sqrt("
-                self.update_display()
-
-            elif value == "sin":
-                self.expression += "math.sin(math.radians("
-                self.update_display()
-
-            elif value == "cos":
-                self.expression += "math.cos(math.radians("
-                self.update_display()
-
-            elif value == "tan":
-                self.expression += "math.tan(math.radians("
-                self.update_display()
-
-            elif value == "π":
-                self.expression += str(math.pi)
-                self.update_display()
-
-            elif value == "e":
-                self.expression += str(math.e)
-                self.update_display()
-
-            elif value == "^":
-                self.expression += "**"
-                self.update_display()
-
-            elif value == "×":
-                self.expression += "*"
-                self.update_display()
-
-            elif value == "÷":
-                self.expression += "/"
-                self.update_display()
-
-            elif value == "%":
-                self.expression += "/100"
-                self.update_display()
+            elif button == "÷":
+                cmd = lambda x="/": press(x)
 
             else:
-                self.expression += value
-                self.update_display()
+                cmd = lambda x=button: press(x)
 
-        except Exception:
-            self.display_error()
+        btn = ctk.CTkButton(
+            row_frame,
+            text=button,
+            width=70,
+            height=70,
+            font=("Poppins", 24, "bold"),
+            corner_radius=20,
+            fg_color=color,
+            hover_color="#333333",
+            command=cmd
+        )
 
-    # ---------------- CALCULATION ---------------- #
-    def calculate(self):
+        btn.pack(side="left", padx=5)
 
-        try:
-            result = eval(self.expression)
-
-            self.expression = str(result)
-
-            self.update_display()
-
-        except Exception:
-            self.display_error()
-
-    # ---------------- DISPLAY UPDATE ---------------- #
-    def update_display(self):
-
-        self.display.delete(0, tk.END)
-        self.display.insert(tk.END, self.expression)
-
-    # ---------------- ERROR ---------------- #
-    def display_error(self):
-
-        self.display.delete(0, tk.END)
-        self.display.insert(tk.END, "Error")
-        self.expression = ""
-
-
-# ---------------- MAIN ---------------- #
-def main():
-
-    root = tk.Tk()
-
-    app = ScientificCalculator(root)
-
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
+root.mainloop()
